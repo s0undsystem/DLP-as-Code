@@ -1,0 +1,16 @@
+# Example policy: label-based detection on the Endpoint surface (uses `labels`, not SITs).
+name: example-confidential-label-endpoint
+archetype: group-scoped-simulation
+description: Restrict Confidential-labeled files on managed devices (example).
+locations:
+  endpoint: true
+rules:
+- name: example-confidential-label-endpoint-Labeled
+  detect:
+    groups:
+    - name: Labeled
+      labels:
+      - Confidential
+  actions:
+    blockAccess: true
+    notifyPolicyTipText: This file is labeled Confidential and is restricted on this device.

@@ -1,0 +1,20 @@
+# Example policy: alert on financial identifiers shared externally over Teams.
+name: example-financial-external-teams
+archetype: group-scoped-simulation
+description: Alert on financial identifiers shared outside the organization over Teams (example).
+locations:
+  teams: true
+rules:
+- name: example-financial-external-teams-Finance
+  detect:
+    accessScope: NotInOrganization
+    groups:
+    - name: Finance
+      sensitiveTypes:
+      - {name: ABA Routing Number, confidence: Low}
+      - {name: U.S. Bank Account Number, confidence: Low}
+      - {name: International Banking Account Number (IBAN), confidence: Low}
+      - {name: SWIFT Code, confidence: Low}
+  actions:
+    generateAlert: true
+    generateIncidentReport: true

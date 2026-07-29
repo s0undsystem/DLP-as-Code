@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DLP-as-code policy (post-archetype-merge)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "mode", "locations", "rules"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1 },
+    "archetype": { "type": "string" },
+    "description": { "type": "string" },
+    "mode": {
+      "enum": ["Enable", "TestWithNotifications", "TestWithoutNotifications", "Disable", "PendingDeletion"]
+    },
+    "priority": { "type": "integer", "minimum": 0 },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "group": { "type": "string", "minLength": 1 },
+        "users": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+      }
+    },
+    "locations": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "exchange": { "type": "boolean" },
+        "teams": { "type": "boolean" },
+        "sharePoint": { "type": ["boolean", "string"] },
+        "oneDrive": { "type": "boolean" },
+        "endpoint": { "type": "boolean" },
+        "copilot": { "type": "boolean" }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/rule" }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "oneOf": [
+        { "required": ["detect"] },
+        { "required": ["rawAdvancedRule"] }
+      ],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "operator": { "enum": ["And", "Or"] },
+        "hasActivity": { "type": "string" },
+        "rawAdvancedRule": { "type": "string", "minLength": 1 },
+        "detect": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["groups"],
+          "properties": {
+            "accessScope": { "enum": ["InOrganization", "NotInOrganization"] },
+            "groups": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["name"],
+                "anyOf": [
+                  { "required": ["sensitiveTypes"] },
+                  { "required": ["labels"] }
+                ],
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "operator": { "enum": ["And", "Or"] },
+                  "labels": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } },
+                  "sensitiveTypes": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["name"],
+                      "properties": {
+                        "name": { "type": "string", "minLength": 1 },
+                        "minCount": { "type": "integer", "minimum": 1 },
+                        "maxCount": { "type": "integer", "minimum": 1 },
+                        "confidence": { "enum": ["Low", "Medium", "High"] }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "actions": { "$ref": "#/$defs/actions" }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "blockAccess": { "type": "boolean" },
+        "blockAccessScope": { "enum": ["All", "PerUser", "PerAnonymousUser"] },
+        "notifyUser": { "type": "array", "items": { "type": "string" } },
+        "notifyPolicyTipText": { "type": "string" },
+        "notifyEmail": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "text": { "type": "string" },
+            "subject": { "type": "string" }
+          }
+        },
+        "generateAlert": { "type": ["boolean", "array"], "items": { "type": "string" } },
+        "alertProperties": { "type": "object" },
+        "generateIncidentReport": { "type": ["boolean", "array"], "items": { "type": "string" } },
+        "incidentReportContent": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

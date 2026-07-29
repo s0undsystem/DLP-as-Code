@@ -1,0 +1,26 @@
+{
+  "_comment": "SAMPLE reference catalog for DLPaC. The sensitiveInfoTypes GUIDs below are Microsoft's GLOBAL built-in identifiers (identical in every tenant, published in Microsoft docs) and are safe to ship. Values that are tenant-specific — groups, sensitivityLabels, sites, and custom SITs — are PLACEHOLDERS: replace them with your own via powershell/Update-Catalog.ps1. The compiler resolves friendly names to these values and fails closed on anything unknown.",
+  "customSensitiveInfoTypes": [
+    "Example Custom SIT"
+  ],
+  "groups": {
+    "dlp-pilot-group": "00000000-0000-0000-0000-000000000001"
+  },
+  "sites": {
+    "Example Site": "https://contoso.sharepoint.com/sites/example"
+  },
+  "sensitivityLabels": {
+    "Confidential": "00000000-0000-0000-0000-0000000000c0"
+  },
+  "keywordDictionaries": {},
+  "trainableClassifiers": {},
+  "sensitiveInfoTypes": {
+    "Credit Card Number": "50842eb7-edc8-4019-85dd-5a5c1f2bb085",
+    "U.S. Social Security Number (SSN)": "a44669fe-0d48-453d-a9b1-2cc83f2cba77",
+    "ABA Routing Number": "cb353f78-2b72-4c3c-8827-92ebe4f69fdf",
+    "U.S. Bank Account Number": "a2ce32a8-f935-4bb6-8e96-2a5157672e2c",
+    "International Banking Account Number (IBAN)": "e7dc4711-11b7-4cb0-b88b-2c394a771f0e",
+    "SWIFT Code": "cb2ab58c-9cb8-4c81-baf8-a4e106791df4",
+    "Example Custom SIT": "00000000-0000-0000-0000-0000000005a7"
+  }
+}

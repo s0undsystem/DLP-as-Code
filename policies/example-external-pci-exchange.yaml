@@ -1,0 +1,21 @@
+# Example policy: block card/SSN data emailed outside the org (structured `detect` form).
+# Inherits mode (simulation) + scope (pilot group) from the archetype.
+name: example-external-pci-exchange
+archetype: group-scoped-simulation
+description: Block credit-card / SSN data emailed outside the organization (example).
+locations:
+  exchange: true
+rules:
+- name: example-external-pci-exchange-Financial
+  detect:
+    accessScope: NotInOrganization
+    groups:
+    - name: Financial
+      sensitiveTypes:
+      - {name: Credit Card Number, confidence: High}
+      - {name: U.S. Social Security Number (SSN), confidence: High}
+  actions:
+    blockAccess: true
+    blockAccessScope: All
+    notifyPolicyTipText: This message contains card or SSN data and can't be sent externally.
+    generateIncidentReport: true

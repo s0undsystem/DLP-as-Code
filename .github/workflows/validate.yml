@@ -1,0 +1,24 @@
+# Compile + test on every push and PR. Pure Python — no tenant access, no secrets, runs anywhere.
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Compile policies
+        run: python compiler/compile.py
+      - name: Run tests
+        run: |
+          python tests/test_compiler.py
+          python tests/test_assistant.py

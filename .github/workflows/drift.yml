@@ -1,0 +1,50 @@
+# Scheduled drift detection: export the live tenant, diff against the committed desired state,
+# and open a PR if they diverge (someone edited a policy in the portal). Read-only against the
+# tenant; the only write is a PR for a human to review.
+name: drift
+
+on:
+  schedule:
+    - cron: "0 13 * * *"   # daily; adjust to your cadence
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: write        # to push the drift branch
+  pull-requests: write   # to open the PR
+
+jobs:
+  drift:
+    runs-on: windows-latest
+    environment: plan
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Export live tenant config
+        shell: powershell
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          KEY_VAULT_NAME: ${{ vars.KEY_VAULT_NAME }}
+          CERT_NAME: ${{ vars.CERT_NAME }}
+          M365_ORGANIZATION: ${{ vars.M365_ORGANIZATION }}
+        run: |
+          . "$env:GITHUB_WORKSPACE/powershell/Connect-Dlp.ps1"
+          & "$env:GITHUB_WORKSPACE/powershell/Export-DlpConfig.ps1"
+      - name: Open a PR if the export differs from the committed state
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: drift/detected
+          title: "Drift detected: live tenant differs from committed policies"
+          commit-message: "chore: sync drift from live tenant"
+          body: |
+            Automated drift detection found differences between the live tenant and the
+            committed desired state. Review the diff and merge to accept, or investigate the
+            out-of-band change.

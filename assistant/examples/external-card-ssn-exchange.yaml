@@ -1,0 +1,28 @@
+# Golden example: request -> known-good draft. Used as few-shot context AND a regression
+# fixture (tests compile every draft, so a stale reference breaks the build).
+request: Stop credit-card and Social Security numbers from being emailed to people outside the company.
+notes: >
+  "Outside the company" -> accessScope NotInOrganization. Simulation first (never Enable from an
+  authored draft). Scope to a pilot group. Block + incident report.
+draft: |
+  name: example-cardData-exchange
+  description: Example — block external email of card / SSN data.
+  mode: TestWithoutNotifications
+  scope:
+    group: dlp-pilot-group
+  locations:
+    exchange: true
+  rules:
+  - name: example-cardData-exchange-rule
+    detect:
+      accessScope: NotInOrganization
+      groups:
+      - name: Financial
+        sensitiveTypes:
+        - {name: Credit Card Number, confidence: High}
+        - {name: U.S. Social Security Number (SSN), confidence: High}
+    actions:
+      blockAccess: true
+      blockAccessScope: All
+      notifyPolicyTipText: This message contains card or SSN data and can't be sent externally.
+      generateIncidentReport: true

@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Build + tenant artifacts (never commit live exports)
+build/
+exports/
+
+# Local env / secrets — never commit
+.env
+*.pfx
+*.cer
+*.pem

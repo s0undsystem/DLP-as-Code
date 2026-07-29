@@ -1,0 +1,8 @@
+# Archetype: group-scoped-simulation
+# Reusable defaults for a safe, code-managed DLP policy:
+#   - simulation only (no enforcement, no user-visible policy tips)
+#   - fenced to a pilot group (never org-wide)
+# Referencing policies inherit these and add their locations + rules (and may override).
+mode: TestWithoutNotifications
+scope:
+  group: dlp-pilot-group

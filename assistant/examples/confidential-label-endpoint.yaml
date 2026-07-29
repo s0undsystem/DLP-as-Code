@@ -1,0 +1,23 @@
+# Golden example demonstrating label-based detection on the Endpoint surface.
+request: On managed devices, block files labeled Confidential from leaving to removable media.
+notes: >
+  Label detection uses `labels:` (resolved to a GUID by the catalog), not `sensitiveTypes:`.
+  Endpoint surface. Simulation first; scope to a pilot group.
+draft: |
+  name: example-confidential-endpoint
+  description: Example — block Confidential-labeled content on endpoints.
+  mode: TestWithoutNotifications
+  scope:
+    group: dlp-pilot-group
+  locations:
+    endpoint: true
+  rules:
+  - name: example-confidential-endpoint-rule
+    detect:
+      groups:
+      - name: Labeled
+        labels:
+        - Confidential
+    actions:
+      blockAccess: true
+      notifyPolicyTipText: This file is labeled Confidential and is restricted on this device.

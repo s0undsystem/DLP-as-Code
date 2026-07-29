@@ -1,0 +1,46 @@
+# Deploy the compiled manifest to the tenant. Manual only, and gated:
+#   - simulation modes (TestWithoutNotifications / TestWithNotifications) always deploy
+#   - a policy with Mode=Enable is REFUSED unless allow_enforce=true is passed explicitly
+# Use a protected `deploy` environment (required reviewers) to force human approval.
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      allow_enforce:
+        description: "Allow Mode=Enable policies to deploy (enforcement). Default false = simulation only."
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    environment: deploy   # add required reviewers here for human-in-the-loop approval
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Compile
+        run: python compiler/compile.py
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Deploy (gated)
+        shell: powershell
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          KEY_VAULT_NAME: ${{ vars.KEY_VAULT_NAME }}
+          CERT_NAME: ${{ vars.CERT_NAME }}
+          M365_ORGANIZATION: ${{ vars.M365_ORGANIZATION }}
+          DLP_ALLOW_ENFORCE: ${{ inputs.allow_enforce }}
+        run: |
+          . "$env:GITHUB_WORKSPACE/powershell/Connect-Dlp.ps1"
+          & "$env:GITHUB_WORKSPACE/powershell/Invoke-Deploy.ps1"

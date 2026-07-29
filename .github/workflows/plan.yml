@@ -1,0 +1,44 @@
+# Read-only "plan": compile the desired state and diff it against the live tenant.
+# Runs on Windows (Security & Compliance PowerShell / Connect-IPPSSession is Windows-only).
+#
+# Required repository variables (Settings -> Secrets and variables -> Actions -> Variables):
+#   AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID,
+#   KEY_VAULT_NAME, CERT_NAME, M365_ORGANIZATION
+# Auth is GitHub OIDC -> azure/login (federated credential) -> cert pulled from Key Vault.
+name: plan
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  id-token: write   # OIDC
+  contents: read
+
+jobs:
+  plan:
+    runs-on: windows-latest
+    environment: plan
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Compile desired state
+        run: python compiler/compile.py
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Diff desired vs live (read-only)
+        shell: powershell
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          KEY_VAULT_NAME: ${{ vars.KEY_VAULT_NAME }}
+          CERT_NAME: ${{ vars.CERT_NAME }}
+          M365_ORGANIZATION: ${{ vars.M365_ORGANIZATION }}
+        run: |
+          . "$env:GITHUB_WORKSPACE/powershell/Connect-Dlp.ps1"
+          & "$env:GITHUB_WORKSPACE/powershell/Invoke-Plan.ps1"

@@ -1,0 +1,15 @@
+# Example policy: carry a hand-authored AdvancedRule verbatim via `rawAdvancedRule`.
+# Use this for complex detection the structured `detect` form doesn't express yet — the
+# compiler passes the JSON through untouched (GUIDs must already be embedded).
+name: example-raw-advanced-rule
+description: Demonstrates carrying a hand-authored AdvancedRule verbatim (example).
+mode: TestWithoutNotifications
+scope:
+  group: dlp-pilot-group
+locations:
+  exchange: true
+rules:
+- name: example-raw-advanced-rule-PCI
+  rawAdvancedRule: "{\"Version\":\"1.0\",\"Condition\":{\"Operator\":\"And\",\"SubConditions\":[{\"ConditionName\":\"ContentContainsSensitiveInformation\",\"Value\":[{\"groups\":[{\"Operator\":\"Or\",\"name\":\"PCI\",\"sensitivetypes\":[{\"name\":\"Credit Card Number\",\"id\":\"50842eb7-edc8-4019-85dd-5a5c1f2bb085\",\"confidencelevel\":\"High\"}]}]}]},{\"ConditionName\":\"AccessScope\",\"Value\":\"NotInOrganization\"}]}}"
+  actions:
+    generateAlert: true
