@@ -63,4 +63,4 @@ $store.Add($cert)
 $store.Close()
 $env:DLP_CERT_THUMBPRINT = $cert.Thumbprint
 
-Write-Host "Certificate registered in CurrentUser\My. Microsoft365DSC will connect app-only using thumbprint $($cert.Thumbprint) for '$env:M365_ORGANIZATION'."
+Write-Host "Certificate registered in CurrentUser\My. Connect-IPPSSession will connect app-only using thumbprint $($cert.Thumbprint) for '$env:M365_ORGANIZATION'."
