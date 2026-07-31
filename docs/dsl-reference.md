@@ -24,6 +24,14 @@ friendly version.
 site name (resolved to a URL via the catalog). Group-scoped surfaces resolve `scope.group` to the
 GUID Purview requires.
 
+#### Copilot
+
+`copilot: true` scopes to individuals via `scope.users`, not `scope.group`. It compiles to a
+different deploy shape from the other locations - a `-Locations` JSON blob plus
+`-EnforcementPlanes ["CopilotExperiences"]` - and the compiler automatically adds a
+`RestrictAccess: [{value: Block}]` action to every rule in the policy, which Purview requires.
+You do not declare that action yourself. See `policies/example-copilot-secrets.yaml`.
+
 ## Rule
 
 A rule is **either** structured `detect` **or** a raw passthrough — exactly one:
