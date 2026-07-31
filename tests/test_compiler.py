@@ -154,6 +154,65 @@ def test_full_fidelity_actions():
     assert params["IncidentReportContent"] == ["All"]
 
 
+def _copilot_policy():
+    return {
+        "name": "unit-test-copilot",
+        "mode": "TestWithoutNotifications",
+        "scope": {"users": ["user@example.com", "another.user@example.com"]},
+        "locations": {"copilot": True},
+        "rules": [{
+            "name": "unit-test-copilot-rule",
+            "hasActivity": "UploadText",
+            "detect": {"groups": [{
+                "name": "Credentials",
+                "sensitiveTypes": [{"name": "Example Credential SIT", "confidence": "Medium"}],
+            }]},
+        }],
+    }
+
+
+def test_copilot_locations_blob():
+    entry = c.compile_policy(_copilot_policy(), CATALOG, ARCHETYPES)
+    locs = json.loads(entry["copilotLocations"])
+    assert len(locs) == 1
+    assert locs[0]["Workload"] == "Applications"
+    assert locs[0]["Location"] == "Copilot.M365"
+    assert locs[0]["Inclusions"] == [
+        {"Type": "IndividualResource", "Identity": "user@example.com"},
+        {"Type": "IndividualResource", "Identity": "another.user@example.com"},
+    ]
+
+
+def test_copilot_enforcement_planes():
+    entry = c.compile_policy(_copilot_policy(), CATALOG, ARCHETYPES)
+    assert entry["enforcementPlanes"] == ["CopilotExperiences"]
+
+
+def test_copilot_rule_carries_restrict_access():
+    """Purview rejects a Copilot rule with no restrict action. The value-only shape matters:
+    a "setting" key alongside a HasActivity condition is rejected by the service."""
+    entry = c.compile_policy(_copilot_policy(), CATALOG, ARCHETYPES)
+    for rule in entry["rules"]:
+        assert rule["params"]["RestrictAccess"] == [{"value": "Block"}]
+        assert "setting" not in rule["params"]["RestrictAccess"][0]
+
+
+def test_non_copilot_policy_has_no_copilot_keys():
+    entry = c.compile_policy(_friendly_policy(), CATALOG, ARCHETYPES)
+    assert "copilotLocations" not in entry
+    assert "enforcementPlanes" not in entry
+    assert "RestrictAccess" not in entry["rules"][0]["params"]
+
+
+def test_example_copilot_policy_compiles():
+    """The shipped example must compile and carry the full Copilot envelope."""
+    path = os.path.join(ROOT, "policies", "example-copilot-secrets.yaml")
+    entry = c.compile_policy(c.load_yaml(path), CATALOG, ARCHETYPES)
+    assert json.loads(entry["copilotLocations"])[0]["Location"] == "Copilot.M365"
+    assert entry["enforcementPlanes"] == ["CopilotExperiences"]
+    assert entry["rules"][0]["params"]["RestrictAccess"] == [{"value": "Block"}]
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failed = 0
