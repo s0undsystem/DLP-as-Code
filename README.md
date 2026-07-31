@@ -177,4 +177,10 @@ byte-order mark as ANSI and a single non-ASCII byte can corrupt parsing.
 
 ## License
 
-[MIT](LICENSE).
+[Apache License 2.0](LICENSE), Copyright 2026 Jared Medeiros. See [NOTICE](NOTICE).
+
+Apache 2.0 permits commercial use, modification, and redistribution, including in closed-source
+products. It requires that you preserve the copyright and [NOTICE](NOTICE) attribution, state any
+changes you made, and include a copy of the license. It also grants an express patent license from
+contributors, and terminates that grant for anyone who initiates patent litigation over the
+software.
