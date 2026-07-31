@@ -9,10 +9,9 @@ context assembly -> brain -> draft validation -> (eventually) PR — be wired an
 no API key, no cost, and no network. It emits a real, schema-valid, resolvable draft so that
 `validator.validate_draft` passes on its output, proving the plumbing end to end.
 
-The Claude implementation (ClaudeBrain) is intentionally NOT here yet — it is the single
-adapter gated on the org's API-billing decision. When that lands it becomes one more class in
-this module: a `client.messages.create(model="claude-opus-5", ...)` call whose text output
-flows into the exact same AuthorResult / query-string contract used below.
+The model-backed implementations live in `backends.py` (LocalBrain, ClaudeBrain), not here:
+this module defines the contract, that one satisfies it. Both flow into the exact same
+AuthorResult / query-string contract used below.
 """
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field

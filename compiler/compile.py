@@ -5,8 +5,8 @@ policies/*.yaml (+ archetypes/*.yaml) -> validate -> resolve names to GUIDs ->
 build/manifest.json, describing the New/Set-DlpCompliancePolicy envelope parameters and
 the AdvancedRule JSON for each rule. Pure transformation; no tenant access required.
 
-The AdvancedRule shape matches the write form validated against the live tenant on
-2026-07-27 (see docs/phase2-build-plan.md, Task 0): PascalCase envelope
+The AdvancedRule shape matches the write form validated against a live tenant (see
+"Notes on the substrate" in the README): PascalCase envelope
 (Version/Condition/SubConditions/ConditionName) with a lowercase detection body
 (groups/name/sensitivetypes/{name,id,confidencelevel,...}).
 """
