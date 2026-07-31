@@ -11,8 +11,9 @@ provider-agnostic; only the tenant-facing half is Microsoft Purview / Windows sp
    AdvancedRule JSON for each rule. No tenant access.
 3. **Plan** (`powershell/Invoke-Plan.ps1`) — diff the compiled desired state against a live export.
    Read-only.
-4. **Deploy** (`powershell/Invoke-Deploy.ps1`) — idempotent create/update via Security & Compliance
-   PowerShell. Simulation-first; enforcement is gated.
+4. **Deploy** (`powershell/Invoke-Deploy.ps1`) — idempotent create/reconcile via Security & Compliance
+   PowerShell. Simulation-first; enforcement is gated. Policies are create-or-update; rules are
+   create-or-leave (see below).
 5. **Drift** — scheduled export + diff; opens a PR when the tenant diverges from the committed state.
 
 ## Why a resolver, and why fail-closed
@@ -35,6 +36,36 @@ custom SITs are tenant-specific and are populated into the catalog from your ten
 - **Fail-closed resolution:** unknown references break the build.
 - **Least privilege auth:** GitHub OIDC → `azure/login` → certificate in Key Vault →
   `Connect-IPPSSession` (app-only). No secrets in the repo.
+
+## Purview behaviours the deploy engine encodes
+
+These are service constraints observed against a live tenant, not stylistic choices. The deploy
+engine is shaped around them:
+
+- **`Set-DlpComplianceRule -AdvancedRule` is rejected** with a generic server side error. An
+  existing AdvancedRule rule can never be updated in place.
+- **`Remove-DlpComplianceRule` is asynchronous.** A removed rule lingers in `Mode=PendingDeletion`,
+  and re-creating the same name while it lingers fails with "already exists" - so remove-and-recreate
+  is not a safe substitute for update either.
+
+  Together these make rule reconciliation **create-or-leave**: a rule that already exists is left
+  untouched. To change detection logic, give the rule a new name. A rule found in `PendingDeletion`
+  is skipped, the policy is reported incomplete, and pruning is suppressed so a policy is never
+  stranded with no rules.
+- **Policy and rule names are case-insensitive.** All name matching uses case-insensitive lookups.
+- **Microsoft 365 Copilot uses a different create shape.** Instead of an `-XLocation` parameter it
+  takes a `-Locations` JSON blob (`Workload=Applications`, `Location=Copilot.M365`, one
+  `IndividualResource` inclusion per user) plus `-EnforcementPlanes @("CopilotExperiences")`.
+- **A Copilot rule must carry a restrict action** or creation fails with
+  `ErrorMissingRestrictActionForCopilotException`. The compiler injects
+  `RestrictAccess = @(@{value="Block"})`. The value-only shape is deliberate: adding a `setting` key
+  alongside a `HasActivity` condition is rejected with
+  `InvalidRestrictAccessActionWithHasActivityCondition`.
+- **`.ps1` files must be pure ASCII.** Windows PowerShell 5.1 reads a BOM-less script as ANSI, so a
+  stray non-ASCII byte inside a string corrupts parsing.
+
+A failing policy is logged and skipped rather than aborting the run; the enforcement gate is the one
+hard stop. The run exits non-zero if any policy failed.
 
 ## Why Windows for the tenant half
 

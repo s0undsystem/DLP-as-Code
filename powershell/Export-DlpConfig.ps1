@@ -4,7 +4,7 @@
     Export the live DLP configuration to exports/ as JSON (READ-ONLY).
 
     Runs under Windows PowerShell 5.1. Requires cert prep by Connect-Dlp.ps1 in the same process.
-    Writes exports/dlp-policies.json and exports/dlp-rules.json — the native, faithful config used
+    Writes exports/dlp-policies.json and exports/dlp-rules.json - the native, faithful config used
     by recon, drift detection, and the importer.
 #>
 

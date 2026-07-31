@@ -25,6 +25,13 @@ from validate import validate_policy
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
 
+# Microsoft 365 Copilot is a DLP location, but it is created through a -Locations JSON blob
+# rather than an -XLocation parameter, and it requires its own enforcement plane.
+COPILOT_WORKLOAD = "Applications"
+COPILOT_LOCATION = "Copilot.M365"
+COPILOT_INCLUSION_TYPE = "IndividualResource"
+COPILOT_ENFORCEMENT_PLANE = "CopilotExperiences"
+
 
 def _deep_merge(base, override):
     out = dict(base)
@@ -78,6 +85,39 @@ def build_locations(policy, catalog):
     if locs.get("endpoint"):
         params["EndpointDlpLocation"] = [group_guid] if group_guid else ["All"]
     return params
+
+
+def build_copilot_locations(users):
+    """Build the -Locations JSON blob New-DlpCompliancePolicy needs for Copilot.M365.
+
+    Copilot has no -XLocation parameter: the surface is described by a JSON array of
+    workload/location objects, with each in-scope user listed as an IndividualResource
+    inclusion. An empty user list yields an empty Inclusions array (org-wide), which the
+    deploy step still gates behind the usual scoping checks.
+    """
+    return json.dumps(
+        [OrderedDict([
+            ("Workload", COPILOT_WORKLOAD),
+            ("Location", COPILOT_LOCATION),
+            ("Inclusions", [
+                OrderedDict([("Type", COPILOT_INCLUSION_TYPE), ("Identity", u)])
+                for u in users
+            ]),
+        ])],
+        separators=(",", ":"),
+    )
+
+
+def copilot_restrict_access():
+    """The RestrictAccess action every Copilot rule must carry.
+
+    Purview rejects a Copilot rule with no RestrictAccess/RestrictWebGrounding action
+    (ErrorMissingRestrictActionForCopilotException). The parameter type is Hashtable[].
+    The value-only shape is deliberate: adding a "setting" key alongside a HasActivity
+    condition is rejected (InvalidRestrictAccessActionWithHasActivityCondition), and
+    value-only is accepted with or without HasActivity.
+    """
+    return [OrderedDict([("value", "Block")])]
 
 
 def build_advanced_rule(rule, catalog):
@@ -191,10 +231,18 @@ def compile_policy(raw, catalog, archetype_dir):
     if merged.get("priority") is not None:
         entry["priority"] = merged["priority"]
     entry["locations"] = build_locations(merged, catalog)
-    # Copilot scopes to individual users (no simple location param) — capture for the record.
-    if merged.get("locations", {}).get("copilot"):
-        entry["copilotUsers"] = list((merged.get("scope") or {}).get("users") or [])
+    is_copilot = bool(merged.get("locations", {}).get("copilot"))
+    if is_copilot:
+        # Copilot scopes to individual users through a -Locations blob, not an -XLocation param.
+        users = list((merged.get("scope") or {}).get("users") or [])
+        entry["copilotUsers"] = users
+        entry["copilotLocations"] = build_copilot_locations(users)
+        entry["enforcementPlanes"] = [COPILOT_ENFORCEMENT_PLANE]
     entry["rules"] = [compile_rule(r, catalog) for r in merged["rules"]]
+    if is_copilot:
+        # Every Copilot rule must carry a restrict action or creation fails outright.
+        for rule_entry in entry["rules"]:
+            rule_entry["params"]["RestrictAccess"] = copilot_restrict_access()
     return entry
 
 
