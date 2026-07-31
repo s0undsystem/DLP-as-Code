@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """Assemble the repo facts a brain needs to answer or author — pure file I/O, no model.
 
 A RepoContext is a read-only snapshot of what the pipeline already knows: the DSL schema,

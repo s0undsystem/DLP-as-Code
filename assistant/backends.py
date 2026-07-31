@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """Concrete brains. Each is a thin adapter over the shared prompt/parse layer in prompts.py.
 
 The only thing that differs between backends is `_complete(prompt) -> str`: send the prompt to

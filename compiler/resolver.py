@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """Reference resolver: map friendly names to the GUIDs/URLs Purview requires.
 
 Reads catalog/catalog.json and resolves sensitive-info-type names, group names, and

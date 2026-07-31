@@ -1,0 +1,55 @@
+name: Bug report
+description: Something behaves differently from what the docs or the source says
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do not paste tenant-specific values: group or label GUIDs, site URLs, user principal
+        names, tenant IDs, or certificate thumbprints. Replace them with placeholders.
+
+        For a security vulnerability, use private reporting instead. See [SECURITY.md](../blob/main/SECURITY.md).
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Which stage?
+      options:
+        - Compiler (compile.py, schema, resolver)
+        - Deploy (Invoke-Deploy.ps1)
+        - Plan or drift (Invoke-Plan.ps1, Export-DlpConfig.ps1)
+        - Connect / auth (Connect-Dlp.ps1, workflows)
+        - Assistant (natural-language layer)
+        - Docs
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: policy
+    attributes:
+      label: Policy YAML that reproduces it
+      description: Minimal version with placeholders substituted. Skip if not applicable.
+      render: yaml
+  - type: textarea
+    id: output
+    attributes:
+      label: Output or error
+      description: Full message, including any Purview error string.
+      render: shell
+  - type: input
+    id: version
+    attributes:
+      label: Commit or version
+      placeholder: e.g. 5fea90b, or v0.1.0
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        Python version:
+        OS (and PowerShell version, if a deploy issue):
+        Running locally or in GitHub Actions:

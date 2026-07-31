@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """Assistant spine tests: context -> brain -> real-compiler validation. No model, no network.
 
 The assistant is a v2/experimental preview; these tests exercise the model-agnostic plumbing

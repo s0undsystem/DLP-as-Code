@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """Compile YAML DLP definitions into a deploy manifest.
 
 policies/*.yaml (+ archetypes/*.yaml) -> validate -> resolve names to GUIDs ->

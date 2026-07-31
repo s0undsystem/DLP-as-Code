@@ -1,0 +1,43 @@
+name: Purview service behaviour
+description: Report how the live service actually behaves, especially where it contradicts the docs
+labels: ["substrate"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the most valuable kind of report this project receives.
+
+        The deploy engine is shaped around service behaviours that are not documented anywhere and
+        were established by hitting them in a real tenant. See
+        [notes on the substrate](../blob/main/docs/architecture.md#notes-on-the-substrate) for the
+        ones already encoded. If you have found another, it belongs here.
+
+        Please do not include tenant-specific values.
+  - type: textarea
+    id: observation
+    attributes:
+      label: What does the service do?
+      description: The cmdlet invoked, the parameters that mattered, and what came back.
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Exact error or response
+      description: Verbatim, including any exception class name such as ErrorMissingRestrictActionForCopilotException.
+      render: shell
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect, and what does Microsoft's documentation say?
+      description: A link to the relevant docs page helps, particularly where the behaviour contradicts it.
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Working shape, if you found one
+      description: What you had to do instead to make the call succeed.
+  - type: textarea
+    id: consequence
+    attributes:
+      label: What would DLPaC have to do differently?
+      description: Optional. Your read on how the compiler or deploy engine should change.

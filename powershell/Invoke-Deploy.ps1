@@ -1,4 +1,8 @@
 #Requires -Version 5.1
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 <#
 .SYNOPSIS
     Deploy a compiled DLP manifest to the tenant via native S&C cmdlets (idempotent).
