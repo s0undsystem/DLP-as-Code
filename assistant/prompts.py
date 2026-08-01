@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """Backend-agnostic prompt assembly and reply parsing — the shared ~90% of any real brain.
 
 Nothing here knows or cares which model runs. `build_authoring_prompt` / `build_query_prompt`

@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """DLPaC assistant — the natural-language layer over the DLP-as-code pipeline.
 
 Model-agnostic by design. The three pieces here have NO dependency on any AI model:

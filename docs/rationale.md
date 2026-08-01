@@ -4,6 +4,15 @@ Why this project exists, what it claims, and how it relates to work that came be
 argument; [architecture.md](architecture.md) is the mechanism and the [README](../README.md) is how
 to run it.
 
+> **Provenance.** The DLP-as-code approach described here, and the reference implementation in this
+> repository, were first published by Jared Medeiros on 2026-07-29 at
+> <https://github.com/s0undsystem/DLP-as-Code>, under the Apache License 2.0. If you build on the
+> methodology or the code, see [CITATION.cff](../CITATION.cff) for how to cite it.
+>
+> To be clear about what that does and does not mean: the license covers this implementation, not
+> the idea. Anyone is free to build their own DLP-as-code system, and that is the point. Section 2
+> situates this work among the prior art it borrows from.
+
 ## 1. Position
 
 A data loss prevention policy is a predicate over data flows. It decides, for every message, file,

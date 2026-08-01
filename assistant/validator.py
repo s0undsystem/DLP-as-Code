@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """Run a candidate policy draft through the REAL compiler and report pass/fail.
 
 This is the guardrail that makes any brain safe. A draft is only trustworthy if it survives

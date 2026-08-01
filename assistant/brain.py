@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """The provider seam: the one place a model plugs in.
 
 `Brain` is the interface every model implementation satisfies — query answering and policy

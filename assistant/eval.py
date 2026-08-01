@@ -1,3 +1,7 @@
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 """Measure whether a brain can actually author policies — run requests, compile the drafts.
 
 Point this at any brain (local model, dry-run, later Claude) and it runs each golden-example

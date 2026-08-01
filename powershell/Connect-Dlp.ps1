@@ -1,4 +1,8 @@
 #Requires -Version 5.1
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 <#
 .SYNOPSIS
     Prepares the app certificate for Microsoft365DSC app-only auth (READ-ONLY recon).

@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+title: "DLPaC: Data Loss Prevention as Code"
+message: "If you use this software or build on the DLP-as-code methodology it defines, please cite it."
+type: software
+authors:
+  - family-names: Medeiros
+    given-names: Jared
+    alias: s0undsystem
+repository-code: "https://github.com/s0undsystem/DLP-as-Code"
+abstract: >-
+  DLPaC treats data loss prevention policy as source code rather than portal
+  configuration. Policies are authored in a domain-specific YAML language,
+  compiled and validated offline into an intermediate representation with
+  fail-closed name-to-GUID resolution, and applied to a tenant through a
+  reviewable, simulation-first pipeline. The approach addresses a property
+  specific to DLP: its failure mode is silent, since a misconfigured rule does
+  not error, it matches nothing, making zero alerts indistinguishable from zero
+  violations. The reference implementation targets Microsoft Purview.
+keywords:
+  - data loss prevention
+  - policy as code
+  - detection as code
+  - microsoft purview
+  - compliance automation
+  - gitops
+license: Apache-2.0
+date-released: "2026-07-29"
+version: "0.1.0"

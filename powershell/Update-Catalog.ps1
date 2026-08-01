@@ -1,4 +1,8 @@
 #Requires -Version 5.1
+# Copyright 2026 Jared Medeiros
+# SPDX-License-Identifier: Apache-2.0
+# Part of DLPaC (https://github.com/s0undsystem/DLP-as-Code). See NOTICE.
+
 <#
 .SYNOPSIS
     Refresh catalog/catalog.json with all resolvable reference data (READ-ONLY).

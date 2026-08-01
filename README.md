@@ -163,6 +163,8 @@ docs/          rationale, architecture, DSL reference
 | [docs/rationale.md](docs/rationale.md) | Why DLP belongs in code, related work, design principles, portability |
 | [docs/architecture.md](docs/architecture.md) | Pipeline contracts, Purview service behaviours, the assistant, safety model, open problems |
 | [docs/dsl-reference.md](docs/dsl-reference.md) | Every field in the policy language |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Setup, house rules, what to work on |
+| [SECURITY.md](SECURITY.md) | Reporting vulnerabilities, scope, operational notes for forks |
 
 If you are deciding whether to adopt this, read the rationale. If you are extending it, read the
 architecture, particularly the substrate findings: several non-obvious Purview behaviours constrain
@@ -171,9 +173,18 @@ what the deploy engine is allowed to do.
 ## Contributing
 
 Issues and pull requests are welcome. The compiler, the assistant, and both test suites run with no
-tenant access, so most contributions can be developed and verified entirely offline. Changes under
-`powershell/` must remain pure ASCII, because Windows PowerShell 5.1 reads a script without a
-byte-order mark as ANSI and a single non-ASCII byte can corrupt parsing.
+tenant access, so most contributions can be developed and verified entirely offline. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for setup and house rules, and
+[open problems](docs/architecture.md#open-problems) for the known unsolved work.
+
+Reports of how the Purview service actually behaves are especially welcome. Much of the deploy
+engine's shape comes from undocumented service behaviour discovered against a live tenant, and that
+knowledge is expensive to rediscover.
+
+## Citing this work
+
+If you build on the methodology or the code, see [CITATION.cff](CITATION.cff). GitHub renders it as
+a "Cite this repository" option in the sidebar.
 
 ## License
 

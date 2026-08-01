@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/s0undsystem/DLP-as-Code/security/advisories/new
+    about: Report privately. Please do not open a public issue.
+  - name: How the pipeline works
+    url: https://github.com/s0undsystem/DLP-as-Code/blob/main/docs/architecture.md
+    about: Pipeline contracts, Purview service behaviours, safety model, open problems.
