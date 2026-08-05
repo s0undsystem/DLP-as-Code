@@ -11,10 +11,22 @@
     process. Reads build/manifest.json (from compile.py). Makes no changes.
 
 .DESCRIPTION
-    For each policy/rule in the manifest, reports whether it would be created, updated, or is
-    already in sync with the tenant. AdvancedRule comparison is structural (JSON parsed and
-    canonicalized) so cosmetic whitespace differences don't show as drift. Exit code is 0
-    regardless of diff (planning is informational); the change count is printed at the end.
+    For each policy/rule in the manifest, reports what a deploy would actually do. AdvancedRule
+    comparison is structural (JSON parsed and canonicalized) so cosmetic whitespace differences
+    don't show as drift. Exit code is 0 regardless of diff (planning is informational); the
+    change count is printed at the end.
+
+    PLAN MUST MIRROR DEPLOY. The value of a plan is that it predicts the deploy, so this script
+    models the same rule reconciliation Invoke-Deploy.ps1 performs:
+
+      - A rule whose AdvancedRule differs is reported as RENAME REQUIRED, not UPDATE. Purview
+        rejects Set-DlpComplianceRule -AdvancedRule, so deploy deliberately leaves such a rule
+        untouched. Reporting it as an update would promise a reconciliation that never happens.
+      - Live rules absent from the manifest are reported as REMOVE, matching deploy's prune.
+        Rules are fetched per policy with -Policy (as deploy does) rather than individually by
+        -Identity, which is what makes those orphans visible at all.
+      - Pruning is suppressed by deploy unless every desired rule is in place, so when a rule is
+        missing or in PendingDeletion the removals are reported as deferred.
 #>
 
 Set-StrictMode -Version Latest
@@ -39,6 +51,12 @@ Import-Module ExchangeOnlineManagement
 Connect-IPPSSession -AppId $env:AZURE_CLIENT_ID -CertificateThumbprint $env:DLP_CERT_THUMBPRINT `
     -Organization $env:M365_ORGANIZATION -ShowBanner:$false
 Write-Host "Connected app-only to Security & Compliance for '$env:M365_ORGANIZATION'.`n"
+
+function Test-HasProperty {
+    param($Object, [string] $Name)
+    if ($null -eq $Object) { return $false }
+    return ($Object.PSObject.Properties.Name -contains $Name)
+}
 
 function Get-Canonical {
     param([string] $Json)
@@ -70,19 +88,56 @@ foreach ($pol in $manifest.policies) {
         }
     }
 
+    # Fetch once per policy, exactly as the deploy engine does. Fetching individually by
+    # -Identity would never surface rules the manifest no longer declares.
+    $liveRules = @(Get-DlpComplianceRule -Policy $name -ErrorAction SilentlyContinue)
+    $liveByName = @{}   # PowerShell hashtables are case-insensitive, matching Purview
+    foreach ($lr in $liveRules) {
+        if ($null -ne $lr) { $liveByName[[string]$lr.Name] = $lr }
+    }
+    $desiredNames = @{}
+    foreach ($r in $pol.rules) { $desiredNames[[string]$r.name] = $true }
+
+    $allRulesInPlace = $true
     foreach ($rule in $pol.rules) {
-        $rname = $rule.name
-        $liveRule = Get-DlpComplianceRule -Identity $rname -ErrorAction SilentlyContinue
-        if ($null -eq $liveRule) {
+        $rname = [string]$rule.name
+        if (-not $liveByName.ContainsKey($rname)) {
             Write-Host "      + CREATE rule '$rname'"
             $changes++
+            $allRulesInPlace = $false
+            continue
         }
-        elseif ((Get-Canonical $liveRule.AdvancedRule) -ne (Get-Canonical $rule.advancedRule)) {
-            Write-Host "      ~ UPDATE rule '$rname' (AdvancedRule differs)"
+        $liveRule = $liveByName[$rname]
+        if ((Test-HasProperty $liveRule 'Mode') -and "$($liveRule.Mode)" -eq 'PendingDeletion') {
+            Write-Host "      ! rule '$rname' is in PendingDeletion; deploy will skip it until the tenant finishes removing it"
+            $allRulesInPlace = $false
+            continue
+        }
+        if ((Get-Canonical $liveRule.AdvancedRule) -ne (Get-Canonical $rule.advancedRule)) {
+            # Deliberately NOT reported as an update: Set-DlpComplianceRule -AdvancedRule is
+            # rejected by the service, so deploy leaves this rule exactly as it is.
+            Write-Host "      ! RENAME REQUIRED rule '$rname' (AdvancedRule differs, and it cannot be updated in place)"
+            Write-Host "          deploy will LEAVE THIS RULE UNCHANGED. Give the rule a new name to apply the new detection logic."
             $changes++
         }
         else {
             Write-Host "      = rule '$rname' in sync"
+        }
+    }
+
+    # Deploy prunes live rules the manifest no longer declares, but only once every desired
+    # rule is in place, so a partially reconciled policy is never stripped of all its rules.
+    foreach ($lr in $liveRules) {
+        if ($null -eq $lr) { continue }
+        $lrName = [string]$lr.Name
+        if ($desiredNames.ContainsKey($lrName)) { continue }
+        if ((Test-HasProperty $lr 'Mode') -and "$($lr.Mode)" -eq 'PendingDeletion') { continue }
+        if ($allRulesInPlace) {
+            Write-Host "      - REMOVE rule '$lrName' (not in the manifest)"
+            $changes++
+        }
+        else {
+            Write-Host "      - REMOVE rule '$lrName' DEFERRED (not in the manifest, but pruning is skipped until every declared rule is in place)"
         }
     }
 }

@@ -18,4 +18,5 @@ rules:
     blockAccess: true
     blockAccessScope: All
     notifyPolicyTipText: This message contains card or SSN data and can't be sent externally.
-    generateIncidentReport: true
+    # A recipient list, not `true`: a bare boolean is documentation and is not deployed.
+    generateIncidentReport: [admin@example.com]

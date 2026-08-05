@@ -20,7 +20,7 @@ rules:
       - {name: Credit Card Number, confidence: High}
   actions:
     blockAccess: true
-    generateIncidentReport: true
+    generateIncidentReport: [admin@example.com]
 ```
 
 That compiles to a deploy manifest with every name resolved to the GUID Purview requires. A name

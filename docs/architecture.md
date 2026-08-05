@@ -40,6 +40,20 @@ Compilation merges any referenced archetype beneath the policy, validates the re
 `compiler/schema/policy.schema.json`, resolves every friendly name to its GUID, and emits both the
 cmdlet envelope parameters and the `AdvancedRule` JSON for each rule.
 
+Compilation also warns, without failing, on two things it is unwilling to decide for the author. A
+policy that resolves to org-wide coverage because no `scope.group` was given is reported with the
+surfaces affected: org-wide is a legitimate choice, but it should be a choice, not the result of a
+missing key. And an action given as a bare boolean where only a recipient list deploys is reported
+as documentation that will not take effect. Both are cases where the source could otherwise mean
+less than it appears to.
+
+**Plan must predict deploy.** A diff is only worth reading if it says what the apply will actually
+do, so `Invoke-Plan.ps1` models the same reconciliation as `Invoke-Deploy.ps1`: it fetches rules per
+policy with `-Policy` rather than individually by `-Identity`, reports rules the manifest no longer
+declares as removals, and defers those removals in the same conditions deploy would. A rule whose
+`AdvancedRule` differs is reported as needing a rename rather than an update, because per Finding 1
+below the service will not accept the update and deploy deliberately leaves the rule alone.
+
 The Windows requirement is imposed by `Connect-IPPSSession`, which Security & Compliance PowerShell
 only ships for Windows. It applies to the three tenant-facing stages and to nothing else. The
 compiler and the test suites are pure Python and run anywhere, which is why `validate` runs on

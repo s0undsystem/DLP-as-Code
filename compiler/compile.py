@@ -124,6 +124,49 @@ def copilot_restrict_access():
     return [OrderedDict([("value", "Block")])]
 
 
+def _warn(message):
+    """Emit a compile-time warning. Warnings never fail the build; errors raise instead."""
+    print(f"WARNING: {message}", file=sys.stderr)
+
+
+# Location parameters that stay "All" while a companion parameter narrows who they apply to.
+# ExchangeLocation=All with ExchangeSenderMemberOf=<group> is scoped, not org-wide.
+_SCOPE_COMPANION = {
+    "ExchangeLocation": "ExchangeSenderMemberOf",
+    "OneDriveLocation": "OneDriveSharedByMemberOf",
+}
+
+
+def unscoped_locations(location_params):
+    """Return the compiled location parameters that resolve to org-wide coverage.
+
+    Org-wide is a legitimate end state, so this is reported rather than refused. It exists
+    because the difference between "scoped to a pilot group" and "every user in the tenant"
+    is a missing key in the source, and that is too quiet a way to make that decision.
+    """
+    wide = []
+    for key, value in location_params.items():
+        if value != ["All"]:
+            continue  # narrowed to a group GUID or a specific site
+        companion = _SCOPE_COMPANION.get(key)
+        if companion and location_params.get(companion):
+            continue  # "All" locations, but membership-scoped
+        wide.append(key)
+    return wide
+
+
+def boolean_only_actions(actions):
+    """Return action names given as a bare boolean, which do not compile to a parameter.
+
+    generateAlert / generateIncidentReport deploy only when given a recipient list. A bare
+    True is documentation (it records what a codified live rule does) and is dropped from
+    the manifest, so the author is told rather than left to discover it in the portal.
+    """
+    actions = actions or {}
+    return [name for name in ("generateAlert", "generateIncidentReport")
+            if isinstance(actions.get(name), bool)]
+
+
 def build_advanced_rule(rule, catalog):
     """Build the AdvancedRule JSON string in the validated write form.
 
@@ -220,7 +263,14 @@ def compile_rule(rule, catalog):
         if rule.get("actions"):
             entry["actionsObserved"] = rule["actions"]
     else:
-        entry["params"] = build_rule_params(rule.get("actions") or {})
+        actions = rule.get("actions") or {}
+        entry["params"] = build_rule_params(actions)
+        for name in boolean_only_actions(actions):
+            _warn(
+                f"rule '{rule['name']}': {name} was given as a boolean, which is documentation "
+                f"only and will NOT be deployed. Supply a recipient list "
+                f"(e.g. {name}: [admin@example.com]) to make it take effect."
+            )
     return entry
 
 
@@ -242,6 +292,15 @@ def compile_policy(raw, catalog, archetype_dir):
         entry["copilotUsers"] = users
         entry["copilotLocations"] = build_copilot_locations(users)
         entry["enforcementPlanes"] = [COPILOT_ENFORCEMENT_PLANE]
+    else:
+        # Copilot scopes per user, so "no group" is expected there and not worth reporting.
+        wide = unscoped_locations(entry["locations"])
+        if wide:
+            _warn(
+                f"policy '{entry['name']}' is ORG-WIDE on {', '.join(wide)} "
+                f"(no scope.group). Every user in the tenant is in scope. Add scope.group to "
+                f"fence it to a pilot group if that was not intended."
+            )
     entry["rules"] = [compile_rule(r, catalog) for r in merged["rules"]]
     if is_copilot:
         # Every Copilot rule must carry a restrict action or creation fails outright.

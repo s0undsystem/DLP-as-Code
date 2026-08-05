@@ -53,8 +53,11 @@ _RULES = """\
 Non-negotiable rules:
 1. SIMULATION FIRST. `mode` must be TestWithoutNotifications or TestWithNotifications. NEVER
    author `mode: Enable` — enforcement is a separate, human-gated step.
-2. SCOPE IS REQUIRED. Every policy must set `scope.group` (or `scope.users` for Copilot). Never
-   author an org-wide policy.
+2. ALWAYS SCOPE A DRAFT. Every policy you author must set `scope.group` (or `scope.users` for
+   Copilot). Never draft an org-wide policy. The compiler permits org-wide, because it is a
+   legitimate end state a human may choose deliberately, and warns when a policy compiles that
+   way. It is not a choice you get to make on someone's behalf: if the request seems to call for
+   org-wide coverage, ask a QUESTION instead of drafting it.
 3. USE ONLY CATALOG NAMES. Every sensitive-info-type, label, group, and site name must appear
    verbatim in the catalog provided below. If the right reference is not in the catalog, do not
    invent one — ask a QUESTION instead.

@@ -217,6 +217,90 @@ def test_example_copilot_policy_compiles():
     assert entry["rules"][0]["params"]["RestrictAccess"] == [{"value": "Block"}]
 
 
+def test_unscoped_locations_flags_org_wide():
+    """A policy with no scope.group compiles to org-wide coverage; that must be reportable."""
+    pol = {
+        "name": "t-wide", "mode": "TestWithNotifications",
+        "locations": {"exchange": True, "teams": True},
+        "rules": [{"name": "r", "detect": {
+            "groups": [{"name": "PCI", "sensitiveTypes": [{"name": "Credit Card Number"}]}]}}],
+    }
+    entry = c.compile_policy(pol, CATALOG, ARCHETYPES)
+    wide = c.unscoped_locations(entry["locations"])
+    assert "ExchangeLocation" in wide
+    assert "TeamsLocation" in wide
+
+
+def test_group_scoped_policy_is_not_flagged_org_wide():
+    """ExchangeLocation stays 'All' even when scoped; the companion MemberOf param is the scope."""
+    entry = c.compile_policy(_friendly_policy(), CATALOG, ARCHETYPES)
+    assert c.unscoped_locations(entry["locations"]) == []
+
+    pol = {
+        "name": "t-scoped-exchange", "mode": "TestWithNotifications",
+        "scope": {"group": PILOT_GROUP},
+        "locations": {"exchange": True},
+        "rules": [{"name": "r", "detect": {
+            "groups": [{"name": "PCI", "sensitiveTypes": [{"name": "Credit Card Number"}]}]}}],
+    }
+    entry = c.compile_policy(pol, CATALOG, ARCHETYPES)
+    assert entry["locations"]["ExchangeLocation"] == ["All"]
+    assert entry["locations"]["ExchangeSenderMemberOf"] == [PILOT_GUID]
+    assert c.unscoped_locations(entry["locations"]) == []
+
+
+def test_named_sharepoint_site_is_not_org_wide():
+    pol = {
+        "name": "t-site", "mode": "TestWithNotifications",
+        "scope": {"group": PILOT_GROUP},
+        "locations": {"sharePoint": "Example Site"},
+        "rules": [{"name": "r", "detect": {
+            "groups": [{"name": "PCI", "sensitiveTypes": [{"name": "Credit Card Number"}]}]}}],
+    }
+    entry = c.compile_policy(pol, CATALOG, ARCHETYPES)
+    assert c.unscoped_locations(entry["locations"]) == []
+
+
+def test_copilot_policy_is_not_reported_org_wide():
+    """Copilot scopes per user via the -Locations blob, so it has no XLocation params at all."""
+    pol = {
+        "name": "t-copilot-scope", "mode": "TestWithoutNotifications",
+        "scope": {"users": ["user@example.com"]},
+        "locations": {"copilot": True},
+        "rules": [{"name": "r", "hasActivity": "UploadText", "detect": {
+            "groups": [{"name": "Creds", "sensitiveTypes": [{"name": "Example Credential SIT"}]}]}}],
+    }
+    entry = c.compile_policy(pol, CATALOG, ARCHETYPES)
+    assert c.unscoped_locations(entry["locations"]) == []
+
+
+def test_boolean_actions_are_detected_and_not_emitted():
+    """A bare boolean is documentation, never a deployable parameter, and must be reportable."""
+    assert c.boolean_only_actions({"generateAlert": True}) == ["generateAlert"]
+    assert c.boolean_only_actions({"generateIncidentReport": True}) == ["generateIncidentReport"]
+    assert c.boolean_only_actions(
+        {"generateAlert": True, "generateIncidentReport": True}
+    ) == ["generateAlert", "generateIncidentReport"]
+
+    # A recipient list is deployable and must NOT be reported.
+    assert c.boolean_only_actions({"generateAlert": ["admin@example.com"]}) == []
+    assert c.boolean_only_actions({}) == []
+
+    pol = {
+        "name": "t-bool", "mode": "TestWithNotifications",
+        "scope": {"group": PILOT_GROUP},
+        "locations": {"exchange": True},
+        "rules": [{
+            "name": "r",
+            "detect": {"groups": [{"name": "PCI", "sensitiveTypes": [{"name": "Credit Card Number"}]}]},
+            "actions": {"generateAlert": True, "blockAccess": True},
+        }],
+    }
+    params = c.compile_policy(pol, CATALOG, ARCHETYPES)["rules"][0]["params"]
+    assert "GenerateAlert" not in params   # dropped, as documented
+    assert params["BlockAccess"] is True   # real actions still compile
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     failed = 0
