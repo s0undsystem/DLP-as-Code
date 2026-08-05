@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/banner.svg" alt="DLPaC: Data Loss Prevention as Code" width="100%">
+</p>
+
 # DLPaC: Data Loss Prevention as Code
 
 Manage Microsoft Purview DLP policies as version-controlled code. Write policies in a small YAML
