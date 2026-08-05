@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/banner.svg" alt="DLPaC: Data Loss Prevention as Code" width="100%">
+  <img src="docs/assets/banner.png" alt="DLPaC: Data Loss Prevention as Code" width="802">
 </p>
 
 # DLPaC: Data Loss Prevention as Code
