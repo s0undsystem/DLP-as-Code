@@ -25,4 +25,4 @@ draft: |
       blockAccess: true
       blockAccessScope: All
       notifyPolicyTipText: This message contains card or SSN data and can't be sent externally.
-      generateIncidentReport: true
+      generateIncidentReport: [admin@example.com]

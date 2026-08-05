@@ -16,5 +16,7 @@ rules:
       - {name: International Banking Account Number (IBAN), confidence: Low}
       - {name: SWIFT Code, confidence: Low}
   actions:
-    generateAlert: true
-    generateIncidentReport: true
+    # Recipient lists, not booleans: a bare `true` is documentation and is not
+    # deployed. Replace with your own reviewers.
+    generateAlert: [admin@example.com]
+    generateIncidentReport: [admin@example.com]
