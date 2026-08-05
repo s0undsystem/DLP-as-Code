@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dlpac"
+version = "0.1.0"
+description = "Data Loss Prevention as Code: compile Microsoft Purview DLP policy from a YAML DSL"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [{ name = "Jared Medeiros" }]
+keywords = [
+    "dlp",
+    "data-loss-prevention",
+    "microsoft-purview",
+    "policy-as-code",
+    "detection-as-code",
+    "compliance-as-code",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: System Administrators",
+    "Programming Language :: Python :: 3",
+    "Topic :: Security",
+    "Topic :: System :: Systems Administration",
+]
+dependencies = [
+    "PyYAML==6.0.3",
+    "jsonschema==4.26.0",
+]
+
+[project.optional-dependencies]
+# Only the Claude backend needs this; every other path runs without it.
+claude = ["anthropic"]
+
+[project.urls]
+Homepage = "https://github.com/s0undsystem/DLP-as-Code"
+Source = "https://github.com/s0undsystem/DLP-as-Code"
+Issues = "https://github.com/s0undsystem/DLP-as-Code/issues"
+
+[project.scripts]
+dlpac-compile = "compiler.compile:main"
+
+[tool.setuptools]
+packages = ["compiler", "assistant"]
+
+[tool.setuptools.package-data]
+compiler = ["schema/*.json"]

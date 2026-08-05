@@ -52,18 +52,22 @@ To deploy to Purview, additionally:
 git clone https://github.com/s0undsystem/DLP-as-Code.git
 cd DLP-as-Code
 python3 -m venv .venv && . .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt   # editable install of the project and its deps
 ```
+
+That installs `dlpac` as a package, so `compiler` and `assistant` import from anywhere and a
+`dlpac-compile` command is available. For the Claude backend, `pip install -e '.[claude]'`.
 
 ## Quickstart
 
 ```sh
-python compiler/compile.py          # policies/*.yaml -> build/manifest.json
+python -m compiler.compile          # policies/*.yaml -> build/manifest.json
 python tests/test_compiler.py       # 13 tests
 python tests/test_assistant.py      # 12 tests
 ```
 
-`compile.py` prints the number of policies compiled and writes `build/manifest.json`. Nothing here
+`dlpac-compile` and `python compiler/compile.py` do the same thing. It prints the number of
+policies compiled and writes `build/manifest.json`. Nothing here
 touches a tenant, so this works on macOS, Linux, and Windows alike.
 
 ## Writing a policy
@@ -145,6 +149,7 @@ human to review. Details in
 ## Repository layout
 
 ```
+pyproject.toml packaging: dependencies, entry points, project metadata
 compiler/      schema, validator, name-to-GUID resolver, compiler
 catalog/       sample catalog (global built-in SIT GUIDs; placeholders elsewhere)
 archetypes/    reusable policy defaults

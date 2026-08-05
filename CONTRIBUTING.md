@@ -12,7 +12,7 @@ runs 3.12.
 python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 
-python compiler/compile.py          # compiles policies/*.yaml to build/manifest.json
+python -m compiler.compile          # compiles policies/*.yaml to build/manifest.json
 python tests/test_compiler.py       # 13 tests
 python tests/test_assistant.py      # 12 tests
 ```

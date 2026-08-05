@@ -12,24 +12,17 @@ already chains all of that and raises loudly on any failure, so we wrap one call
 No tenant access and no model involved — this runs anywhere the compiler runs (incl. the Mac).
 """
 import os
-import sys
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional
 
 import yaml
 
-# The compiler modules import each other by bare name (from resolver import ...), so they
-# require compiler/ on sys.path rather than being importable as a package.
-_COMPILER_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "compiler")
-_COMPILER_DIR = os.path.abspath(_COMPILER_DIR)
-if _COMPILER_DIR not in sys.path:
-    sys.path.insert(0, _COMPILER_DIR)
+from compiler.compile import compile_policy
+from compiler.resolver import Catalog, ResolutionError, load_catalog
 
-from compile import compile_policy  # noqa: E402
-from resolver import Catalog, ResolutionError, load_catalog  # noqa: E402
-
-_ARCHETYPE_DIR = os.path.abspath(os.path.join(_COMPILER_DIR, "..", "archetypes"))
-_DEFAULT_CATALOG = os.path.abspath(os.path.join(_COMPILER_DIR, "..", "catalog", "catalog.json"))
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+_ARCHETYPE_DIR = os.path.join(_ROOT, "archetypes")
+_DEFAULT_CATALOG = os.path.join(_ROOT, "catalog", "catalog.json")
 
 # Stages, in the order the pipeline runs them. `stage` on a failure names where it stopped.
 STAGE_PARSE = "yaml_parse"

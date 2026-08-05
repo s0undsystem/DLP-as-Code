@@ -12,10 +12,13 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
-sys.path.insert(0, os.path.join(ROOT, "compiler"))
+# Repo root on the path so `compiler` imports as a package without needing an install.
+# `pip install -e .` makes even this unnecessary.
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
-import compile as c  # noqa: E402
-from resolver import load_catalog, ResolutionError  # noqa: E402
+from compiler import compile as c  # noqa: E402
+from compiler.resolver import load_catalog, ResolutionError  # noqa: E402
 
 CATALOG = load_catalog(os.path.join(ROOT, "catalog", "catalog.json"))
 ARCHETYPES = os.path.join(ROOT, "archetypes")

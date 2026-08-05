@@ -23,8 +23,12 @@ from collections import OrderedDict
 
 import yaml
 
-from resolver import load_catalog, ResolutionError
-from validate import validate_policy
+try:  # imported as part of the `compiler` package (the normal path)
+    from .resolver import load_catalog, ResolutionError
+    from .validate import validate_policy
+except ImportError:  # executed directly as a script: `python compiler/compile.py`
+    from resolver import load_catalog, ResolutionError
+    from validate import validate_policy
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, ".."))
