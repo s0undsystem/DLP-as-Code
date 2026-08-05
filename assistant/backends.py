@@ -71,13 +71,22 @@ class LocalBrain(LLMBrain):
         return data["choices"][0]["message"]["content"]
 
 
+# Default Anthropic model, overridable per call or via DLPAC_CLAUDE_MODEL. Named here so the
+# default lives in exactly one place: model lineups move, and an ID pinned in several spots
+# goes stale in some of them.
+DEFAULT_CLAUDE_MODEL = "claude-opus-5"
+
+
 class ClaudeBrain(LLMBrain):
     """Anthropic API backend. Requires `pip install anthropic` and an ANTHROPIC_API_KEY.
 
-    Uses adaptive thinking; the model default is claude-opus-5.
+    Uses adaptive thinking. The model defaults to DEFAULT_CLAUDE_MODEL and can be overridden
+    by passing `model=`, or by setting DLPAC_CLAUDE_MODEL when constructed via make_brain.
+    Which models an account can reach depends on the API access it has been granted, so
+    anything the account cannot use needs the override rather than a code change.
     """
 
-    def __init__(self, model: str = "claude-opus-5", max_tokens: int = 16000):
+    def __init__(self, model: str = DEFAULT_CLAUDE_MODEL, max_tokens: int = 16000):
         self.model = model
         self.max_tokens = max_tokens
 
@@ -114,5 +123,7 @@ def make_brain(kind: Optional[str] = None, **cfg) -> Brain:
             api_key=cfg.get("api_key") or os.getenv("DLPAC_LOCAL_API_KEY"),
         )
     if kind == "claude":
-        return ClaudeBrain(model=cfg.get("model", "claude-opus-5"))
+        return ClaudeBrain(
+            model=cfg.get("model") or os.getenv("DLPAC_CLAUDE_MODEL") or DEFAULT_CLAUDE_MODEL
+        )
     raise ValueError(f"unknown brain kind: {kind!r} (expected dry-run | local | claude)")
