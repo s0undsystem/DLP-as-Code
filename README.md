@@ -132,6 +132,7 @@ export DLPAC_LOCAL_MODEL=qwen2.5-coder:14b
 
 # Anthropic API
 export DLPAC_BRAIN=claude ANTHROPIC_API_KEY=...
+export DLPAC_CLAUDE_MODEL=claude-opus-5   # optional; overrides the default model
 pip install anthropic       # optional dependency, only for this backend
 
 python -m assistant.eval --show-drafts
